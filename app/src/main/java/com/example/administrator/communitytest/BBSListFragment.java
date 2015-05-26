@@ -66,6 +66,17 @@ public class BBSListFragment extends BaseFragment implements CommunityListView.I
             items = DataSource.getList3();
         }
 
+        listItem.clear();
+        for(int i=0;i<10;i++)
+        {
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            map.put("ItemImage1", R.drawable.ic_hot);//ï¿½ï¿½ï¿½ï¿½Í¼Æ¬            map.put("ItemTitle", "ï¿½ï¿½"+i+"ï¿½ï¿½");
+            map.put("ItemImage2",R.drawable.ic_hot);
+            map.put("ItemText", "å†…å®¹"+i+"");
+            map.put("ItemTitle","æ ‡é¢˜"+i);
+            map.put("ItemTip","#tipä¸‹æ ‡"+i);
+            listItem.add(map);
+        }
     }
 
     @Override
@@ -80,19 +91,10 @@ public class BBSListFragment extends BaseFragment implements CommunityListView.I
 
 
         //mAdapter = new ArrayAdapter<String>(getActivity(), R.layout.community_list_item, items);
-        // listItem = new ArrayList<HashMap<String,     Object>>();/*ÔÚÊý×éÖÐ´æ·ÅÊý¾Ý*/
-        for(int i=0;i<10;i++)
-        {
-            HashMap<String, Object> map = new HashMap<String, Object>();
-            map.put("ItemImage1", R.drawable.ic_hot);//¼ÓÈëÍ¼Æ¬            map.put("ItemTitle", "µÚ"+i+"ÐÐ");
-            map.put("ItemImage2",R.drawable.ic_hot);
-            map.put("ItemText", "ÕâÊÇµÚ"+i+"ÐÐ");
-            map.put("ItemTitle","±êÌâ+"+i);
-            map.put("ItemTip","#tip°å¿é"+i);
-            listItem.add(map);
-        }
+        // listItem = new ArrayList<HashMap<String,     Object>>();/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 
-         mAdapter = new SimpleAdapter(getActivity(),listItem,//ÐèÒª°ó¶¨µÄÊý¾Ý
+
+         mAdapter = new SimpleAdapter(getActivity(),listItem,//ï¿½ï¿½Òªï¿½ó¶¨µï¿½ï¿½ï¿½ï¿½ï¿½
                 R.layout.community_list_item,new String[]{"ItemImage1","ItemImage2", "ItemText","ItemTitle","ItemTip"},new int[] {R.id.community_item_image1,
                 R.id.community_item_image2,R.id.community_item_content,R.id.item_title,R.id.community_item_tip});
 
@@ -120,8 +122,17 @@ public class BBSListFragment extends BaseFragment implements CommunityListView.I
 //        }
     }
 
-    private void loadData() {
-
+    private void loadData(Boolean isLoad,Boolean isRefresh) {
+        for(int i=0;i<2;i++)
+        {
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            map.put("ItemImage1", R.drawable.ic_hot);//ï¿½ï¿½ï¿½ï¿½Í¼Æ¬            map.put("ItemTitle", "ï¿½ï¿½"+i+"ï¿½ï¿½");
+            map.put("ItemImage2",R.drawable.ic_hot);
+            map.put("ItemText", "å†…å®¹"+i+"");
+            map.put("ItemTitle","æ ‡é¢˜"+i);
+            map.put("ItemTip","#tipä¸‹æ ‡"+i);
+            listItem.add(map);
+        }
     }
 
     @Override
@@ -133,13 +144,13 @@ public class BBSListFragment extends BaseFragment implements CommunityListView.I
                 // start = ++refreshCnt;
                 items.clear();
                 // mAdapter.notifyDataSetChanged();
-                mAdapter = new SimpleAdapter(getActivity(),listItem,//ÐèÒª°ó¶¨µÄÊý¾Ý
+                mAdapter = new SimpleAdapter(getActivity(),listItem,//ï¿½ï¿½Òªï¿½ó¶¨µï¿½ï¿½ï¿½ï¿½ï¿½
                         R.layout.community_list_item,new String[]{"ItemImage1","ItemImage2", "ItemText","ItemTitle","ItemTip"},new int[] {R.id.community_item_image1,
                         R.id.community_item_image2,R.id.community_item_content,R.id.item_title,R.id.community_item_tip});
                 list.setAdapter(mAdapter);
                 list.stopRefresh();
                 list.stopLoadMore();
-                list.setRefreshTime("¸Õ¸Õ");
+                list.setRefreshTime("åˆšåˆš");
             }
         }, 2000);
     }
@@ -150,11 +161,11 @@ public class BBSListFragment extends BaseFragment implements CommunityListView.I
             @Override
             public void run() {
                 Log.d("intointo", "onloadmodesuccess2");
-                geneItems();
+                loadData(true,true);
                 mAdapter.notifyDataSetChanged();
                 list.stopRefresh();
                 list.stopLoadMore();
-                list.setRefreshTime("¸Õ¸Õ");
+                list.setRefreshTime("åˆšåˆš");
             }
         }, 2000);
     }
