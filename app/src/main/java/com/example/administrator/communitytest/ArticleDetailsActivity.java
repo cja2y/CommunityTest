@@ -1,13 +1,24 @@
 package com.example.administrator.communitytest;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.DocumentsContract;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.apache.http.util.ByteArrayBuffer;
@@ -20,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ArticleDetailsActivity extends Activity {
@@ -28,142 +41,141 @@ public class ArticleDetailsActivity extends Activity {
     private TextView textView;
     private Handler handler;
     private EditText showText;
+
+    private CommunityListView articleList;
+    private ArticleDetailsListAdapter mAdapter;
+    private WebView web;
+    private ArrayList<BBSArticleInfo> articleInfosList = new ArrayList<BBSArticleInfo>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_details);
-        textView = (TextView)findViewById(R.id.html_text);
-        showText = (EditText)findViewById(R.id.show_text);
+        for(int i = 0;i <10;i++){
+            BBSArticleInfo info = new BBSArticleInfo();
+            info.setArticleContent("content"+i);
+            info.setArticleTip("tip" + i);
+            info.setArticleTitle("title" + i);
+            info.setBoutique(true);
+            info.setTop(true);
+            info.setHot(true);
+            info.setArticleIndex(i);
+            articleInfosList.add(info);
+        }
 
-        handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                showText.setText(doc + "");
-            }
-        };
-
-        new Thread() {
-            public void run() {
-
-                // 1.直接从字符串中输入HTML文档
-                // String html =
-                // "<html><head><title> 测试html的加载 </title></head>"
-                // + "<body><p> 这是一篇使用jsoup来加载html的文章 </p></body></html>";
-                // doc = Jsoup.parse(html);
-                // handler.sendEmptyMessage(0);
-
-               //  2.1 从 URL直接加载 HTML文档
-                 try {
-                 doc = Jsoup.connect("http://blog.csdn.net/u010142437").get();
-                 handler.sendEmptyMessage(0);
-                 } catch (IOException e) {
-                 e.printStackTrace();
-                 }
-
-                // 2.2 从 URL直接加载 HTML文档
-                // try {
-                // doc = Jsoup.connect("http://blog.csdn.net/u010142437")
-                // .data("query", "Java") // 请求参数
-                // .userAgent("I’m jsoup") // 设置 User-Agent
-                // .cookie("auth", "token") // 设置 cookie
-                // .timeout(5000) // 设置连接超时时间
-                // .post(); // 使用 POST方法访问 URL
-                // handler.sendEmptyMessage(0);
-                // } catch (IOException e) {
-                // e.printStackTrace();
-                // }
-
-                // 2.3从 URL直接加载 HTML文档
-                // try {
-                // doc = Jsoup.parse(new URL(
-                // "http://blog.csdn.net/u010142437"), 5000);
-                // handler.sendEmptyMessage(0);
-                // } catch (MalformedURLException e) {
-                // e.printStackTrace();
-                // } catch (IOException e) {
-                // e.printStackTrace();
-                // }
-
-                // 2.4从 URL直接加载 HTML文档：先使用流读取html，然后使用Jsoup转换成Document文档
-                // String html =
-                // getHtmlString("http://blog.csdn.net/u010142437");
-                // // 再使用第一种方式
-                // doc = Jsoup.parse(html);
-                // handler.sendEmptyMessage(0);
-
-//                // 3.从sd卡文件中加载 HTML文档
-//                File file = new File("/mnt/sdcard/test.html");
-//                try {
-//                    // 第三个参数是baseURL，当 HTML文档使用相对路径方式引用外部文件时，jsoup会自动为这些
-//                    // URL加上baseURL这个前缀 。
-//                    doc = Jsoup.parse(file, "UTF-8",
-//                            "http://blog.csdn.net/");
-//                    handler.sendEmptyMessage(0);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-            }
-        }.start();
+        initList();
 
     }
+    private void initList(){
+        articleList = (CommunityListView)findViewById(R.id.article_details_list);
+        articleList.setPullLoadEnable(true);
+        articleList.setPullRefreshEnable(false);
+       // LayoutInflater layoutInflater = new La
+        LayoutInflater layoutInflater = LayoutInflater.from(this);
 
+        View headView = layoutInflater.inflate(R.layout.article_details_head_item, null);
 
+        web = (WebView)headView.findViewById(R.id.article_webview);
 
-    private String getHtmlString(String urlString) {
-        try {
-            URL url = new URL(urlString);
-            URLConnection ucon = url.openConnection();
-            InputStream instr = ucon.getInputStream();
-            BufferedInputStream bis = new BufferedInputStream(instr);
-            ByteArrayBuffer bau = new ByteArrayBuffer(500);
-            int current = 0;
-            while ((current = bis.read()) != -1) {
-                bau.append((byte) current);
+        web.setWebViewClient(new WebViewClient() {
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                // if(forumWebviewCode!=0) {
+                // LoadingHint.showLoadingHint(activity, "加载中");
+                //Trace.d("失效url",webView.getUrl());
+                //}
+
             }
-            return EncodingUtils.getString(bau.toByteArray(), "utf_8");
-        } catch (Exception e) {
-            return "";
+
+            public void onProgressChanged(WebView view, int newProgress) {
+                // activity的进度是0 to 10000 (both inclusive),所以要*100
+
+            }
+
+            public void onPageFinished(WebView view, String url) {
+
+                //view.loadUrl("javascript:window.handler.getCode(document.body.innerHTML.toString());");
+                // view.loadUrl("javascript:window.local_obj.showSource(document.body.innerHTML);");
+                super.onPageFinished(view, url);
+                //web.setMinimumHeight(web.getContentHeight());
+                //  web.heigh
+                LinearLayout.LayoutParams linearParams = (LinearLayout.LayoutParams) web.getLayoutParams(); //取控件textView当前的布局参数
+                linearParams.height = web.getContentHeight();// 控件的高强制设成20
+                web.setLayoutParams(linearParams);
+            }
+        });
+
+        articleList.addHeaderView(headView);
+
+        mAdapter = new ArticleDetailsListAdapter(this,articleInfosList);
+        articleList.setAdapter(mAdapter);
+        web.loadUrl("http://www.baidu.com");
+    }
+    protected void onResume(){
+        super.onResume();
+       // web.loadUrl("http://www.baidu.com");
+    }
+    class ArticleDetailsListAdapter extends BaseAdapter{
+        LayoutInflater layoutInflater;
+        String inflater = Context.LAYOUT_INFLATER_SERVICE;
+        //private List<DetailRecordInfo> listInner = null;
+        private List<BBSArticleInfo> listInner = null;
+        public ArticleDetailsListAdapter(Context context)
+        {}
+        public ArticleDetailsListAdapter(Context context,List<BBSArticleInfo> list){
+            layoutInflater = (LayoutInflater) context
+                    .getSystemService(inflater);
+            this.listInner = list;
+        }
+        public int getCount() {
+            //通过此项决定ListView一共有多少Item
+            return listInner.size();
+        }
+        public Object getItem(int arg0) {
+            // TODO Auto-generated method stub
+            return listInner.get(arg0);
+        }
+        public long getItemId(int arg0) {
+            // TODO Auto-generated method stub
+            return arg0;
+        }
+
+        @Override
+        public boolean isEnabled(int position) {
+            return false;
+        }
+
+        //为每一项中的控件赋值,每一项显示的数据有它决定
+        public View getView(int arg0, View arg1, ViewGroup arg2) {
+
+            //得到模板布局文件对象 ,并为其中的控件赋值
+            LinearLayout linearLayout = (LinearLayout) layoutInflater.inflate(R.layout.article_details_item, null);
+            ImageView imageHead = (ImageView) linearLayout.findViewById(R.id.article_item_head_img);
+            TextView userName = (TextView) linearLayout.findViewById(R.id.article_item_user_name);
+            TextView refreshTime = (TextView) linearLayout.findViewById(R.id.post_time);
+            TextView floorIndex = (TextView) linearLayout.findViewById(R.id.floor_index);
+            TextView articleContent = (TextView) linearLayout.findViewById(R.id.post_content);
+
+            //最新一条消息变颜色
+
+//            if(latest_date == 1 && arg0 == 0){
+//                date.setTextColor(getResources().getColor(R.color.gjj_latestdata));
+//                way.setTextColor(getResources().getColor(R.color.gjj_latestdata));
+//                company.setTextColor(getResources().getColor(R.color.gjj_latestdata));
+//                numleft.setTextColor(getResources().getColor(R.color.gjj_latestdata));
+//                num.setTextColor(getResources().getColor(R.color.gjj_latestdata));
+//
+//            }
+
+            BBSArticleInfo articleInfo = listInner.get(arg0);
+            //linearLayout.setTag(a);
+            linearLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                }
+            });
+
+
+            return linearLayout;
         }
     }
-
-    // 1.直接从字符串中输入HTML文档
-    // String html =
-    // "<html><head><title> 测试html的加载 </title></head>"
-    // + "<body><p> 这是一篇使用jsoup来加载html的文章 </p></body></html>";
-    // doc = Jsoup.parse(html);
-    // handler.sendEmptyMessage(0);
-
-
-
-    // 2.2 从 URL直接加载 HTML文档
-    // try {
-    // doc = Jsoup.connect("http://blog.csdn.net/u010142437")
-    // .data("query", "Java") // 请求参数
-    // .userAgent("I’m jsoup") // 设置 User-Agent
-    // .cookie("auth", "token") // 设置 cookie
-    // .timeout(5000) // 设置连接超时时间
-    // .post(); // 使用 POST方法访问 URL
-    // handler.sendEmptyMessage(0);
-    // } catch (IOException e) {
-    // e.printStackTrace();
-    // }
-
-    // 2.3从 URL直接加载 HTML文档
-    // try {
-    // doc = Jsoup.parse(new URL(
-    // "http://blog.csdn.net/u010142437"), 5000);
-    // handler.sendEmptyMessage(0);
-    // } catch (MalformedURLException e) {
-    // e.printStackTrace();
-    // } catch (IOException e) {
-    // e.printStackTrace();
-    // }
-
-    // 2.4从 URL直接加载 HTML文档：先使用流读取html，然后使用Jsoup转换成Document文档
-    // String html =
-    // getHtmlString("http://blog.csdn.net/u010142437");
-    // // 再使用第一种方式
-    // doc = Jsoup.parse(html);
-    // handler.sendEmptyMessage(0);
 }
